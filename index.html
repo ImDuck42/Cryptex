@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptex — Steganography</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <nav class="sidebar-wrap">
+        <div class="tabs" role="tablist" aria-label="Application Modes">
+            <button class="tab-btn active" id="tab-btn-pack" data-target="pack-tab" role="tab" aria-selected="true" aria-controls="pack-tab">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>P<br>a<br>c<br>k<br><br>I<br>m<br>a<br>g<br>e<br>s</span>
+            </button>
+            <button class="tab-btn" id="tab-btn-unpack" data-target="unpack-tab" role="tab" aria-selected="false" aria-controls="unpack-tab">
+                <i class="fa-solid fa-box-open"></i>
+                <span>U<br>n<br>p<br>a<br>c<br>k<br><br>I<br>m<br>a<br>g<br>e<br>s</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <!-- PACK TAB -->
+        <section id="pack-tab" class="tab-content active" role="tabpanel" aria-labelledby="tab-btn-pack">
+            <div class="panel">
+                <div class="form-group">
+                    <label class="form-label" for="folderInput">Source Folder</label>
+                    <div class="file-zone" id="folder-zone" data-input-target="folderInput">
+                        <input type="file" id="folderInput" webkitdirectory directory multiple>
+                        <!-- Mobile / fallback: allow selecting multiple files when folder selection unsupported -->
+                        <input type="file" id="multi-file-input" multiple accept="image/*" class="hidden" aria-hidden="true">
+                        <span class="file-zone-icon"><i class="fa-solid fa-folder-open"></i></span>
+                        <div class="file-zone-label" id="folder-zone-label">Click or drag a folder here</div>
+                        <div class="file-zone-sub">All images within the folder will be packed</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Options</label>
+                    <label class="toggle-row" for="includeSubfolders">
+                        <div class="toggle-info">
+                            <span class="toggle-title">Include Subfolders</span>
+                            <span class="toggle-desc">Recursively pack images from all nested directories</span>
+                        </div>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="includeSubfolders" checked>
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label class="form-label" for="decoyInput">
+                        Carrier Image
+                        <span class="badge badge-accent" style="margin-left:8px" data-tooltip="What people see when they open the file normally">Optional</span>
+                    </label>
+                    <div class="file-zone" id="decoy-zone" data-input-target="decoyInput">
+                        <input type="file" id="decoyInput" accept="image/*">
+                        <span class="file-zone-icon"><i class="fa-regular fa-image"></i></span>
+                        <div class="file-zone-label" id="decoy-zone-label">Click or drag a decoy image</div>
+                        <div class="file-zone-sub">Leave empty to auto-generate a random noise image</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="packBtn">
+                    <span class="btn-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </span>
+                    <span class="spinner hidden"></span>
+                    <span class="btn-text">Generate Container Image</span>
+                </button>
+
+                <div class="progress-wrap hidden" id="progress-wrap">
+                    <div class="progress-label">
+                        <span id="progress-text">Packing images...</span>
+                        <span id="progress-pct">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <div id="pack-status" class="hidden"></div>
+
+                <div class="stats-row hidden" id="pack-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-count">—</div>
+                        <div class="stat-label">Images</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-payload">—</div>
+                        <div class="stat-label">Payload</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total">—</div>
+                        <div class="stat-label">Total Size</div>
+                    </div>
+                </div>
+
+                <a id="downloadPacked" class="btn btn-success mt-24 hidden">
+                    <span class="btn-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                    </span>
+                    <span class="btn-text">Download Container Image</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- UNPACK TAB -->
+        <section id="unpack-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-btn-unpack">
+            <div class="panel">
+                <div class="form-group">
+                    <label class="form-label" for="packedInput">Container Image</label>
+                    <div class="file-zone" id="packed-zone" data-input-target="packedInput">
+                        <input type="file" id="packedInput" accept="image/*">
+                        <span class="file-zone-icon"><i class="fa-solid fa-box-archive"></i></span>
+                        <div class="file-zone-label" id="packed-zone-label">Drop container image here</div>
+                        <div class="file-zone-sub">Select an image previously packed with Cryptex</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="unpackBtn">
+                    <span class="btn-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                    </span>
+                    <span class="spinner hidden"></span>
+                    <span class="btn-text">Extract Images</span>
+                </button>
+            </div>
+
+            <div id="browser-ui" class="hidden">
+                <div class="section-header">
+                    <h2 class="section-title">Extracted Files</h2>
+                    <span class="section-meta" id="extract-summary"></span>
+                </div>
+                <div id="folder-container"></div>
+                <div class="download-all-wrap">
+                    <button class="btn btn-secondary" id="downloadAllBtn">
+                        <span class="btn-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                        </span>
+                        <span class="spinner hidden"></span>
+                        <span class="btn-text">Download All Images</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" aria-modal="true" role="dialog">
+        <button class="modal-close" id="modal-close-btn" aria-label="Close">×</button>
+        <button class="modal-nav modal-prev" id="modal-prev-btn" aria-label="Previous">&#8610;</button>
+        <img id="preview-img" src="" alt="Image Preview">
+        <button class="modal-nav modal-next" id="modal-next-btn" aria-label="Next">&#8611;</button>
+        <div class="modal-footer">
+            <div class="modal-filename" id="modal-filename"></div>
+            <div class="modal-counter" id="modal-counter"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
